@@ -285,21 +285,36 @@ function messageReceived(ev) {
 
 }
 
+var total_away = 0;
+var total_here = 0;
+
 function faceChanged(data) {
     // we need to send messages anytime someone is stepped in
     // TODO: don't send if there is no one out
 
     if (data.hasFace) {
         $("#faceStatus").text("Looking");
-        gapi.hangout.data.sendMessage("looking");
-        showAvatarStatus(gapi.hangout.getLocalParticipantId(), 1);
+        total_here += 1;
     } else {
         $("#faceStatus").text("away");
-        gapi.hangout.data.sendMessage("away");
-        showAvatarStatus(gapi.hangout.getLocalParticipantId(), 0);
+        total_away += 1;
     }
 }
 
+function sendAwayStatus() {
+    var avg_here = total_here/total_away;
+    total_here = 0;
+    total_away = 0;
+
+    if (avg_here >= 0.5) {
+        gapi.hangout.data.sendMessage("looking");
+        showAvatarStatus(gapi.hangout.getLocalParticipantId(), 1);
+    } else {
+        gapi.hangout.data.sendMessage("away");
+        showAvatarStatus(gapi.hangout.getLocalParticipantId(), 0);
+    }
+
+}
 
 // Kicks off app and attaches all listeners.
 function startApp() {
@@ -312,6 +327,7 @@ function startApp() {
     gapi.hangout.data.onMessageReceived.add(messageReceived);
     gapi.hangout.data.onStateChanged.add(stateChanged);
     gapi.hangout.av.effects.onFaceTrackingDataChanged.add(faceChanged);
+    window.setInterval(sendAwayStatus, 5000);
 
 }
 
