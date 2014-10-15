@@ -119,7 +119,7 @@ var status_urls = {}
 var avatar_urls = {}
 
 function showAvatarStatus(pid, status) {
-    if (gapi.hangout.av.getParticipantVisible(pid)){
+    if (gapi.hangout.av.isParticipantVisible(pid)){
         return
     }
 
