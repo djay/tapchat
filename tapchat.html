@@ -119,6 +119,10 @@ var status_urls = {}
 var avatar_urls = {}
 
 function showAvatarStatus(pid, status) {
+    if (gapi.hangout.av.getParticipantVisible(pid)){
+        return
+    }
+
     if (status_urls[pid] && status_urls[pid][status]) {
         return status_urls[pid][status];
     }
