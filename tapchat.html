@@ -174,7 +174,10 @@ function showAvatarStatus(pid, status) {
 function doStepOut() {
     //set shared state so others can hide me
     // will also hide myself
-    gapi.hangout.data.setValue(gapi.hangout.getLocalParticipantId(), "1");
+    var myid = gapi.hangout.getLocalParticipantId();
+    var changes = {};
+    changes[myid] = "1";
+    gapi.hangout.data.submitDelta(changes, []);
 
     // I also don't want to hear or see anybody
 
@@ -188,9 +191,9 @@ function doStepOut() {
         //setLocalAudioNotificationsMute(true);
     }
     gapi.hangout.av.setMicrophoneMute(true);
-    gapi.hangout.av.setParticipantVisible(gapi.hangout.getLocalParticipantId(), false);
+    gapi.hangout.av.setParticipantVisible(myid, false);
     // show ourselfs as others will see us
-    showAvatarStatus(gapi.hangout.getLocalParticipantId(), 0);
+    showAvatarStatus(myid, 0);
 
     stepin.show();
     stepout.hide();
@@ -205,7 +208,7 @@ function doStepIn() {
 
     //set shared state so others can show me again
     // will also show myself
-    gapi.hangout.data.clearValue(gapi.hangout.getLocalParticipantId());
+    gapi.hangout.data.submitDelta({}, [gapi.hangout.getLocalParticipantId()]);
 
     //gapi.hangout.getEnabledParticipants(); // running the app
 
