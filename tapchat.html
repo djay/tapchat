@@ -168,6 +168,12 @@ function showAvatarStatus(pid, status) {
 }
 
 function doStepOut() {
+    //set shared state so others can hide me
+    // will also hide myself
+    gapi.hangout.data.setValue(gapi.hangout.getLocalParticipantId(), "1");
+
+    // I also don't want to hear or see anybody
+
     //gapi.hangout.getEnabledParticipants(); // running the app
     var all = gapi.hangout.getParticipants();
     for (var i=0; i<all.length; i++) {
@@ -178,13 +184,11 @@ function doStepOut() {
         //setLocalAudioNotificationsMute(true);
     }
     //gapi.hangout.av.setCameraMute(true);
-    gapi.hangout.av.setMicrophoneMute(true);
+    //gapi.hangout.av.setMicrophoneMute(true);
     stepin.show();
     stepout.hide();
     //takeSnapshot()
 
-    //set shared state so others can hide me
-    gapi.hangout.data.setValue(gapi.hangout.getLocalParticipantId(), "1");
     // show ourselfs as others will see us
     showAvatarStatus(gapi.hangout.getLocalParticipantId(), 0);
 
@@ -194,9 +198,13 @@ function doStepOut() {
 function doStepIn() {
     window.clearInterval(snapshotTimer);
 
+    //set shared state so others can show me again
+    // will also show myself
+    gapi.hangout.data.clearValue(gapi.hangout.getLocalParticipantId());
+
     //gapi.hangout.getEnabledParticipants(); // running the app
 
-    // We need to enable everyone except those who are stepped out
+    // Let me see and hear everyone also stepped in. ie exclude those who stepped out
     var all = gapi.hangout.getParticipants();
     for (var i=0; i<all.length; i++) {
         var p = all[i];
@@ -210,18 +218,16 @@ function doStepIn() {
         //setLocalAudioNotificationsMute(true);
     }
     //gapi.hangout.av.setCameraMute(false);
-    gapi.hangout.av.setMicrophoneMute(false);
-    gapi.hangout.av.setParticipantVisible(gapi.hangout.getLocalParticipantId(), true);
-    // get rid of your snapshot
-    gapi.hangout.av.clearAvatar(
-        gapi.hangout.getLocalParticipantId()
-    );
+//    gapi.hangout.av.setMicrophoneMute(false);
+//    gapi.hangout.av.setParticipantVisible(gapi.hangout.getLocalParticipantId(), true);
+//    // get rid of your snapshot
+//    gapi.hangout.av.clearAvatar(
+//        gapi.hangout.getLocalParticipantId()
+//    );
 
     stepout.show();
     stepin.hide();
 
-    //set shared state so others can show me again
-    gapi.hangout.data.clearValue(gapi.hangout.getLocalParticipantId());
 
 }
 
@@ -269,10 +275,9 @@ function messageReceived(ev) {
 }
 
 function faceChanged(data) {
-    if (gapi.hangout.data.getValue(gapi.hangout.getLocalParticipantId())!=1) {
-        // we are stepped in. stop setting face updates
-        return;
-    }
+    // we need to send messages anytime someone is stepped in
+    // TODO: don't send if there is no one out
+
     if (data.hasFace) {
         $("#faceStatus").text("Looking");
         gapi.hangout.data.sendMessage("looking");
