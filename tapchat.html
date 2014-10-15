@@ -171,13 +171,16 @@ function showAvatarStatus(pid, status) {
 
 }
 
+function setShowUser(pid, show) {
+    gapi.hangout.av.setParticipantAudible(pid, show);
+    gapi.hangout.av.setParticipantVisible(pid, show);
+}
+
 function doStepOut() {
     //set shared state so others can hide me
     // will also hide myself
     var myid = gapi.hangout.getLocalParticipantId();
-    var changes = {};
-    changes[myid] = "1";
-    gapi.hangout.data.submitDelta(changes, []);
+    gapi.hangout.data.setValue(myid, "1");
 
     // I also don't want to hear or see anybody
 
@@ -185,14 +188,10 @@ function doStepOut() {
     var all = gapi.hangout.getParticipants();
     for (var i=0; i<all.length; i++) {
         var p = all[i];
-        gapi.hangout.av.setParticipantAudible(p.id, false);
-        gapi.hangout.av.setParticipantVisible(p.id, false)
-        //gapi.hangout.av.setParticipantAudible(pid, false);
-        //setLocalAudioNotificationsMute(true);
+        showUser(p.id, false);
     }
-    gapi.hangout.av.setMicrophoneMute(true);
-    gapi.hangout.av.setParticipantAudible(myid, false);
-    gapi.hangout.av.setParticipantVisible(myid, false);
+    //gapi.hangout.av.setMicrophoneMute(true);
+    showUser(myid, false);
     // show ourselfs as others will see us
     showAvatarStatus(myid, 0);
 
@@ -211,7 +210,7 @@ function doStepIn() {
 
     //set shared state so others can show me again
     // will also show myself
-    gapi.hangout.data.submitDelta({}, [gapi.hangout.getLocalParticipantId()]);
+    gapi.hangout.data.clearValue(myid);
 
     //gapi.hangout.getEnabledParticipants(); // running the app
 
@@ -223,17 +222,14 @@ function doStepIn() {
             continue;
         }
         //else
-        gapi.hangout.av.setParticipantAudible(p.id, true);
-        gapi.hangout.av.setParticipantVisible(p.id, true);
+        showUser(p.id, true);
         gapi.hangout.av.clearAvatar(p.id);
-        //gapi.hangout.av.setParticipantAudible(pid, false);
-        //setLocalAudioNotificationsMute(true);
     }
     //gapi.hangout.av.setCameraMute(false);
     gapi.hangout.av.setMicrophoneMute(false);
-    gapi.hangout.av.setParticipantAudible(myid, true);
-    gapi.hangout.av.setParticipantVisible(myid, true);
-//    // get rid of your snapshot
+    showUser(myid, true);
+
+    // get rid of your snapshot
     gapi.hangout.av.clearAvatar(myid);
 
     stepout.show();
@@ -246,48 +242,40 @@ function stateChanged(ev) {
     for (var i=0; i<ev.addedKeys.length; i++) {
         var pid = ev.addedKeys[i].key;
         // user stepped out. mute them
-        gapi.hangout.av.setParticipantAudible(pid, false);
-        gapi.hangout.av.setParticipantVisible(pid, false);
+        showUser(pid, false);
         // Assume they are away until we get messages
         showAvatarStatus(pid, 0);
     }
     for (var i=0; i<ev.removedKeys.length; i++) {
         var pid = ev.removedKeys[i];
         // user stepped in. unmute them
-        gapi.hangout.av.setParticipantVisible(pid, true);
-        gapi.hangout.av.setParticipantAudible(pid, true);
+        showUser(pid, true);
         gapi.hangout.av.clearAvatar(pid);
     }
 }
 
+/*
+ * Received away status
+ */
 function messageReceived(ev) {
     // updates on where user is looking
     var sender = ev.senderId;
     var image = ev.message;
     if (image=='away') {
         // they stepped out
-        //gapi.hangout.av.muteParticipantMicrophone(sender, true);
-        //gapi.hangout.av.setParticipantVisible(sender, false);
         showAvatarStatus(sender, 0);
 
     } else if (image='looking') {
-        //gapi.hangout.av.muteParticipantMicrophone(sender, true);
-        //gapi.hangout.av.setParticipantVisible(sender, false);
         showAvatarStatus(sender, 1);
     }
-//    } else {
-//        gapi.hangout.av.muteParticipantMicrophone(sender, false);
-//        gapi.hangout.av.setParticipantVisible(sender, true);
-//        gapi.hangout.av.clearAvatar(
-//            sender
-//        );
-//    }
-
 }
 
 var total_away = 0;
 var total_here = 0;
 
+/*
+ * Collect data about face to determine away status
+ */
 function faceChanged(data) {
     // we need to send messages anytime someone is stepped in
     // TODO: don't send if there is no one out
@@ -301,12 +289,15 @@ function faceChanged(data) {
     }
 }
 
+/*
+ * Periodically determine aways status and send
+ */
 function sendAwayStatus() {
     var avg_here = total_here/(total_away+total_here);
     total_here = 0;
     total_away = 0;
 
-    if (avg_here >= 0.5) {
+    if (avg_here >= 0.3) {
         gapi.hangout.data.sendMessage("looking");
         showAvatarStatus(gapi.hangout.getLocalParticipantId(), 1);
     } else {
@@ -320,15 +311,22 @@ function sendAwayStatus() {
 function startApp() {
 
 
-  // add behavior to UI Controls
+    // add behavior to UI Controls
     stepout.click(doStepOut);
     stepin.click(doStepIn);
 
     gapi.hangout.data.onMessageReceived.add(messageReceived);
     gapi.hangout.data.onStateChanged.add(stateChanged);
     gapi.hangout.av.effects.onFaceTrackingDataChanged.add(faceChanged);
+//    gapi.hangout.onEnabledParticipantsChanged.add( function(ev) {
+//        for (var i=0; i<ev.enabledParticipants.length; i++) {
+//            var pid = ev.enabledParticipants[i];
+//            stepIn(pid);
+//        }
+//    })
     window.setInterval(sendAwayStatus, 5000);
 
+    doStepIn();
 }
 
 
