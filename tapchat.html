@@ -185,13 +185,13 @@ function doStepOut() {
     var all = gapi.hangout.getParticipants();
     for (var i=0; i<all.length; i++) {
         var p = all[i];
-        gapi.hangout.av.muteParticipantMicrophone(p.id, true);
+        gapi.hangout.av.setParticipantAudible(p.id, false);
         gapi.hangout.av.setParticipantVisible(p.id, false)
         //gapi.hangout.av.setParticipantAudible(pid, false);
         //setLocalAudioNotificationsMute(true);
     }
     gapi.hangout.av.setMicrophoneMute(true);
-    gapi.hangout.av.muteParticipantMicrophone(myid, true);
+    gapi.hangout.av.setParticipantAudible(myid, false);
     gapi.hangout.av.setParticipantVisible(myid, false);
     // show ourselfs as others will see us
     showAvatarStatus(myid, 0);
@@ -231,7 +231,7 @@ function doStepIn() {
     }
     //gapi.hangout.av.setCameraMute(false);
     gapi.hangout.av.setMicrophoneMute(false);
-    gapi.hangout.av.muteParticipantMicrophone(myid, false);
+    gapi.hangout.av.setParticipantAudible(myid, true);
     gapi.hangout.av.setParticipantVisible(myid, true);
 //    // get rid of your snapshot
     gapi.hangout.av.clearAvatar(myid);
@@ -246,7 +246,7 @@ function stateChanged(ev) {
     for (var i=0; i<ev.addedKeys.length; i++) {
         var pid = ev.addedKeys[i].key;
         // user stepped out. mute them
-        gapi.hangout.av.muteParticipantMicrophone(pid, true);
+        gapi.hangout.av.setParticipantAudible(pid, false);
         gapi.hangout.av.setParticipantVisible(pid, false);
         // Assume they are away until we get messages
         showAvatarStatus(pid, 0);
@@ -254,8 +254,8 @@ function stateChanged(ev) {
     for (var i=0; i<ev.removedKeys.length; i++) {
         var pid = ev.removedKeys[i];
         // user stepped in. unmute them
-        gapi.hangout.av.muteParticipantMicrophone(pid, false);
         gapi.hangout.av.setParticipantVisible(pid, true);
+        gapi.hangout.av.setParticipantAudible(pid, true);
         gapi.hangout.av.clearAvatar(pid);
     }
 }
