@@ -187,7 +187,7 @@ function doStepOut() {
         //gapi.hangout.av.setParticipantAudible(pid, false);
         //setLocalAudioNotificationsMute(true);
     }
-    gapi.hangout.av.setCameraMute(true);
+    gapi.hangout.av.setMicrophoneMute(true);
     gapi.hangout.av.setParticipantVisible(gapi.hangout.getLocalParticipantId(), false);
     // show ourselfs as others will see us
     showAvatarStatus(gapi.hangout.getLocalParticipantId(), 0);
