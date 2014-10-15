@@ -242,7 +242,7 @@ function doStepIn() {
 
 function stateChanged(ev) {
     for (var i=0; i<ev.addedKeys.length; i++) {
-        var pid = ev.addedKeys[i];
+        var pid = ev.addedKeys[i].key;
         // user stepped out. mute them
         gapi.hangout.av.muteParticipantMicrophone(pid, true);
         gapi.hangout.av.setParticipantVisible(pid, false);
