@@ -241,7 +241,7 @@ function doStepIn() {
 }
 
 function stateChanged(ev) {
-    for (var i=0; i++; i<ev.addedKeys.length) {
+    for (var i=0; i<ev.addedKeys.length; i++) {
         var pid = ev.addedKeys[i];
         // user stepped out. mute them
         gapi.hangout.av.muteParticipantMicrophone(pid, true);
@@ -249,7 +249,7 @@ function stateChanged(ev) {
         // Assume they are away until we get messages
         showAvatarStatus(pid, 0);
     }
-    for (var i=0; i++; i<ev.removedKeys.length) {
+    for (var i=0; i<ev.removedKeys.length; i++) {
         var pid = ev.removedKeys[i];
         // user stepped in. unmute them
         gapi.hangout.av.muteParticipantMicrophone(pid, false);
