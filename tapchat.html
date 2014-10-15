@@ -302,7 +302,7 @@ function faceChanged(data) {
 }
 
 function sendAwayStatus() {
-    var avg_here = total_here/total_away;
+    var avg_here = total_here/(total_away+total_here);
     total_here = 0;
     total_away = 0;
 
