@@ -223,7 +223,7 @@ function doStepIn() {
             continue;
         }
         //else
-        gapi.hangout.av.muteParticipantMicrophone(p.id, false);
+        gapi.hangout.av.setParticipantAudible(p.id, true);
         gapi.hangout.av.setParticipantVisible(p.id, true);
         gapi.hangout.av.clearAvatar(p.id);
         //gapi.hangout.av.setParticipantAudible(pid, false);
