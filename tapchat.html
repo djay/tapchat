@@ -191,6 +191,7 @@ function doStepOut() {
         //setLocalAudioNotificationsMute(true);
     }
     gapi.hangout.av.setMicrophoneMute(true);
+    gapi.hangout.av.muteParticipantMicrophone(myid, true);
     gapi.hangout.av.setParticipantVisible(myid, false);
     // show ourselfs as others will see us
     showAvatarStatus(myid, 0);
@@ -205,6 +206,8 @@ function doStepOut() {
 
 function doStepIn() {
     window.clearInterval(snapshotTimer);
+
+    var myid = gapi.hangout.getLocalParticipantId();
 
     //set shared state so others can show me again
     // will also show myself
@@ -228,11 +231,10 @@ function doStepIn() {
     }
     //gapi.hangout.av.setCameraMute(false);
     gapi.hangout.av.setMicrophoneMute(false);
-    gapi.hangout.av.setParticipantVisible(gapi.hangout.getLocalParticipantId(), true);
+    gapi.hangout.av.muteParticipantMicrophone(myid, false);
+    gapi.hangout.av.setParticipantVisible(myid, true);
 //    // get rid of your snapshot
-    gapi.hangout.av.clearAvatar(
-        gapi.hangout.getLocalParticipantId()
-    );
+    gapi.hangout.av.clearAvatar(myid);
 
     stepout.show();
     stepin.hide();
